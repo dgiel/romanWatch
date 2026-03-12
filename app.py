@@ -8,7 +8,7 @@ from astral import LocationInfo
 from timezonefinder import TimezoneFinder
 
 st.set_page_config(page_title="Temporale Uhr", page_icon="🏛️")
-st.title("🏛️ Meine temporale Uhr")
+st.title("🏛️ Römische Uhrzeit 🏛️")
 
 # --- HILFSFUNKTION ---
 def int_zu_roemisch(zahl):
