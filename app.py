@@ -1,32 +1,46 @@
+import streamlit as st
+import datetime
+import time
+from geopy.geocoders import Nominatim
 from astral.sun import sun
 from astral import LocationInfo
-import datetime
 
-def berechne_roemische_zeit(ort_name, lat, lon, zeitzone):
-    # 1. Sonnenaufgang und -untergang für den Ort heute holen
-    ort = LocationInfo(ort_name, "Region", zeitzone, lat, lon)
-    sonne = sun(ort.observer, date=datetime.date.today(), tzinfo=ort.timezone)
+st.set_page_config(page_title="Römische Uhr", page_icon="🏛️")
+st.title("🏛️ Meine Römische Uhr")
+
+# WICHTIG: Zwischenspeichern (Caching), damit wir nicht jede Sekunde 
+# den Geodaten-Server anfragen und gesperrt werden!
+@st.cache_data
+def hole_koordinaten(stadt):
+    geolocator = Nominatim(user_agent="meine_roemische_uhr_app")
+    location = geolocator.geocode(stadt)
+    if location:
+        return location.latitude, location.longitude
+    return None, None
+
+# Eingabefeld (Standardwert auf Offenburg gesetzt)
+ort_name = st.text_input("Standort für die Sonnenberechnung:", "Offenburg")
+lat, lon = hole_koordinaten(ort_name)
+
+# Platzhalter, damit die Ansicht nicht flackert
+uhr_platzhalter = st.empty()
+
+if lat is None or lon is None:
+    st.error("Ort nicht gefunden. Bitte überprüfe die Schreibweise.")
+else:
+    # Alles in der Weltzeit (UTC) berechnen, das umgeht alle Zeitzonen-Probleme!
+    jetzt_utc = datetime.datetime.now(datetime.timezone.utc)
     
-    t_auf = sonne["sunrise"]
-    t_unter = sonne["sunset"]
-    jetzt = datetime.datetime.now(ort.timezone)
+    # Astronomische Daten für heute holen
+    ort_info = LocationInfo(ort_name, "Region", "UTC", lat, lon)
+    sonnen_daten = sun(ort_info.observer, date=jetzt_utc.date())
     
-    # Prüfen, ob es Tag ist
-    if jetzt < t_auf or jetzt > t_unter:
-        return "Es ist Nacht! (Römer hatten hierfür Nachtwachen/Vigiliae)"
+    t_auf = sonnen_daten["sunrise"]
+    t_unter = sonnen_daten["sunset"]
     
-    # 2. Reale Tageslänge und wahren Mittag berechnen (in Sekunden)
-    tageslaenge_sekunden = (t_unter - t_auf).total_seconds()
-    wahrer_mittag = t_auf + datetime.timedelta(seconds=tageslaenge_sekunden / 2)
+    # Tageslänge und Wahrer Mittag in echten Sekunden
+    tageslaenge_sek = (t_unter - t_auf).total_seconds()
+    wahrer_mittag = t_auf + datetime.timedelta(seconds=tageslaenge_sek / 2)
     
-    # 3. Abstand zum Mittag ermitteln und skalieren
-    abstand_zum_mittag_sek = (jetzt - wahrer_mittag).total_seconds()
-    skalierungsfaktor = (12 * 3600) / tageslaenge_sekunden
-    
-    roemische_sekunden_abstand = abstand_zum_mittag_sek * skalierungsfaktor
-    
-    # 4. In die übliche Zeit umrechnen (Basis 12:00:00 Uhr)
-    roemischer_mittag = datetime.datetime(jetzt.year, jetzt.month, jetzt.day, 12, 0, 0)
-    roemische_zeit = roemischer_mittag + datetime.timedelta(seconds=roemische_sekunden_abstand)
-    
-    return roemische_zeit.strftime("%H:%M:%S")
+    with uhr_platzhalter.container():
+        st.write(f"🌍
