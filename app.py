@@ -42,7 +42,7 @@ def hole_zeitzone(lat, lon):
 
 # --- SEITENLEISTE (MENÜ) ---
 st.sidebar.header("Einstellungen")
-ort_name = st.sidebar.text_input("📍 Standort:", "Offenburg")
+ort_name = st.sidebar.text_input("📍 Standort:", "Augusta Treverorum")
 live_update = st.sidebar.checkbox("Live-Uhr (Sekundentakt)", value=True, help="Ausschalten, um in Ruhe einen Ort einzutippen")
 
 # --- HAUPTPROGRAMM ---
