@@ -8,7 +8,7 @@ from astral import LocationInfo
 from timezonefinder import TimezoneFinder
 
 st.set_page_config(page_title="Temporale Uhr", page_icon="🏛️")
-st.title("🏛️ Römische Uhrzeit 🏛️")
+st.title("🏛️ Meine temporale Uhr")
 
 # --- HILFSFUNKTION ---
 def int_zu_roemisch(zahl):
@@ -42,7 +42,7 @@ def hole_zeitzone(lat, lon):
 
 # --- SEITENLEISTE (MENÜ) ---
 st.sidebar.header("Einstellungen")
-ort_name = st.sidebar.text_input("📍 Standort:", "Augusta Treverorum")
+ort_name = st.sidebar.text_input("📍 Standort:", "Offenburg")
 live_update = st.sidebar.checkbox("Live-Uhr (Sekundentakt)", value=True, help="Ausschalten, um in Ruhe einen Ort einzutippen")
 
 # --- HAUPTPROGRAMM ---
@@ -104,7 +104,7 @@ else:
     st.write("---")
     with st.expander("ℹ️ Wie funktioniert die römische Zeit?"):
         st.write("""
-        Die Römer nutzten sogenannte **temporale Stunden**. Der Tag zwischen Sonnenaufgang und Sonnenuntergang wurde stets in exakt **12 gleich lange Stunden** unterteilt.
+        Die Römer nutzten sogenannte **[temporale Stunden](https://de.wikipedia.org/wiki/Temporale_Stunden)**. Der Tag zwischen Sonnenaufgang und Sonnenuntergang wurde stets in exakt **12 gleich lange Stunden** unterteilt.
         
         Das führt zu einer faszinierenden Mechanik:
         * ☀️ Im **Sommer**, wenn die Tage lang sind, dauert eine römische Stunde (und damit auch jede Minute und Sekunde) länger als unsere heutige.
@@ -112,6 +112,8 @@ else:
         * 🕛 Nur am **wahren Mittag** (wenn die Sonne exakt am höchsten steht), sind beide Systeme perfekt synchron auf 12:00:00 Uhr.
         
         Die Nacht wurde nicht in Stunden, sondern in vier Nachtwachen (*Vigiliae*) eingeteilt. Unsere Null (0) kannten die Römer noch nicht, weshalb hier ein **N** für *nulla/nihil* (nichts) angezeigt wird.
+        
+        📖 *[Mehr dazu auf Wikipedia lesen](https://de.wikipedia.org/wiki/Temporale_Stunden)*
         """)
 
     # Live-Aktualisierung
