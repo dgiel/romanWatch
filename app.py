@@ -8,7 +8,7 @@ from astral import LocationInfo
 from timezonefinder import TimezoneFinder
 
 st.set_page_config(page_title="Temporale Uhr", page_icon="🏛️")
-st.title("🏛️ Römische Uhr 🏛️")
+st.title("🏛️Römische Uhr🏛️")
 
 # --- HILFSFUNKTION ---
 def int_zu_roemisch(zahl):
@@ -42,7 +42,7 @@ def hole_zeitzone(lat, lon):
 
 # --- SEITENLEISTE (MENÜ) ---
 st.sidebar.header("Einstellungen")
-ort_name = st.sidebar.text_input("📍 Standort:", "Augusta Treverorum")
+ort_name = st.sidebar.text_input("📍 Standort:", "Offenburg")
 live_update = st.sidebar.checkbox("Live-Uhr (Sekundentakt)", value=True, help="Ausschalten, um in Ruhe einen Ort einzutippen")
 
 # --- HAUPTPROGRAMM ---
@@ -114,6 +114,16 @@ else:
         Die Nacht wurde nicht in Stunden, sondern in vier Nachtwachen (*Vigiliae*) eingeteilt. Unsere Null (0) kannten die Römer noch nicht, weshalb hier ein **N** für *nulla/nihil* (nichts) angezeigt wird.
         
         📖 *[Mehr dazu auf Wikipedia lesen](https://de.wikipedia.org/wiki/Temporale_Stunden)*
+        """)
+
+    # --- RECHTLICHES & DATENSCHUTZ ---
+    with st.expander("⚖️ Impressum & Datenschutz"):
+        st.markdown("""
+        **Impressum (Anbieterkennzeichnung)** *Dominik Giel* *Badstr. 24* *77652 Offenburg* *E-Mail: dominik.giel@hs-offenburg.de* **Datenschutz** Diese App speichert aktiv keine persönlichen Daten der Nutzer (keine Cookies, keine Datenbank). Bitte beachten Sie jedoch:  
+        * **Hosting:** Diese App wird über die Streamlit Community Cloud bereitgestellt. Beim Aufruf werden serverseitig Verbindungsdaten (wie Ihre IP-Adresse) durch Streamlit verarbeitet.  
+        * **Geodaten:** Die von Ihnen eingegebenen Ortsnamen werden zur Berechnung der Koordinaten an die Server von OpenStreetMap (Nominatim) gesendet.  
+
+        **Haftungsausschluss** Dies ist ein rein privates Hobbyprojekt. Es wird keine Gewähr für die Richtigkeit, Aktualität oder ständige Verfügbarkeit der berechneten Zeiten und Geodaten übernommen.
         """)
 
     # Live-Aktualisierung
