@@ -14,7 +14,7 @@ st.set_page_config(page_title="Zeitreise nach Pompeji: Hora Septima", page_icon=
 
 # --- HEADER-GRAFIK EINBINDEN (Wasserfarbe: AI-Toga, Vesuvius-Ausbruch) ---
 # WICHTIG: Das Bild muss im gleichen Verzeichnis als 'vesuvius.png' liegen!
-bild_pfad = "vesuvius.png" 
+bild_pfad = "graphic.png" 
 
 if os.path.exists(bild_pfad):
     # 'use_container_width=True' sorgt für automatische Größenanpassung auf Handy & Desktop
