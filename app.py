@@ -165,7 +165,7 @@ else:
     # --- RECHTLICHES & DATENSCHUTZ ---
     with st.expander("⚖️ Impressum & Datenschutz"):
         st.markdown("""
-        **Impressum (Anbieterkennzeichnung)** *Max Mustermann* *Musterstraße 1* *12345 Musterstadt* *E-Mail: max@mustermail.de* **Datenschutz** Diese App speichert aktiv keine persönlichen Daten der Nutzer (keine Cookies, keine Datenbank). Bitte beachten Sie jedoch:  
+        **Impressum (Anbieterkennzeichnung)** *Dominik Giel* *Badstr.24* *Offenburg* *E-Mail: dominik.giel@hs-offenburg.de* **Datenschutz** Diese App speichert aktiv keine persönlichen Daten der Nutzer (keine Cookies, keine Datenbank). Bitte beachten Sie jedoch:  
         * **Hosting:** Diese App wird über die Streamlit Community Cloud bereitgestellt. Beim Aufruf werden serverseitig Verbindungsdaten (wie Ihre IP-Adresse) durch Streamlit verarbeitet.  
         * **Geodaten:** Die von Ihnen eingegebenen Ortsnamen werden zur Berechnung der Koordinaten an die Server von OpenStreetMap (Nominatim) gesendet.  
 
