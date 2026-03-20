@@ -9,18 +9,19 @@ from timezonefinder import TimezoneFinder
 import os # Import für Dateiprüfung
 
 # --- SEITENKONFIGURATION & LAYOUT (Responsiv) ---
-st.set_page_config(page_title="romanWatch - temporale Uhr", page_icon="🏛️", layout="centered")
+# TÄTIGUNG C: Titel angepasst, volcano Icon
+st.set_page_config(page_title="Zeitreise nach Pompeji: Hora Septima", page_icon="🌋", layout="centered")
 
-# --- HEADER-GRAFIK EINBINDEN ---
-# WICHTIG: Das Bild muss im gleichen Verzeichnis als 'graphic.png' liegen!
-bild_pfad = "graphic.png" 
+# --- HEADER-GRAFIK EINBINDEN (Wasserfarbe: AI-Toga, Vesuvius-Ausbruch) ---
+# WICHTIG: Das Bild muss im gleichen Verzeichnis als 'vesuvius.png' liegen!
+bild_pfad = "vesuvius.png" 
 
 if os.path.exists(bild_pfad):
     # 'use_container_width=True' sorgt für automatische Größenanpassung auf Handy & Desktop
     st.image(bild_pfad, use_container_width=True)
 else:
     # Fallback, falls das Bild fehlt
-    st.title("🏛️ romanWatch")
+    st.title("🏛️ Zeitreise-App")
     st.warning(f"Hinweis: Die Header-Grafik '{bild_pfad}' wurde nicht im Verzeichnis gefunden.")
 
 
@@ -58,26 +59,30 @@ def hole_zeitzone(lat, lon):
     return tf.timezone_at(lng=lon, lat=lat)
 
 # --- SEITENLEISTE (MENÜ) ---
-st.sidebar.header("Einstellungen")
-# ÄNDERUNG: Standard-Standort auf "Rom" gesetzt
-ort_name = st.sidebar.text_input("📍 Standort:", "Rom")
+st.sidebar.header("⏳ Zeitreise-Steuerung")
+# ÄNDERUNG B: Standard-Standort auf "Neapel" gesetzt und Label geklärt
+ort_name = st.sidebar.text_input("📍 Historischer Standort (z.B. Neapel, Pompeji):", "Neapel")
 live_update = st.sidebar.checkbox("Live-Uhr (Sekundentakt)", value=True, help="Ausschalten, um in Ruhe einen Ort einzutippen")
 
 # --- NEU: CHARMANTER HINWEIS AUF DIE BUCHSEITE IN DER SIDEBAR ---
+# TÄTIGUNG A: Neuer, spezifischer Vesuv-Text
 st.sidebar.markdown("---") # Trennlinie
 st.sidebar.info("""
-**Von der Sonnenuhr zur Cäsium-Sekunde ⏱️**
+**Vesuv-Ausbruch zur 7. Stunde? 🌋⏱️**
 
-Hat Ihnen diese kleine spielerische Reise in die relative Zeitmessung gefallen? Wenn Sie sich (wie ich) nicht nur für historische Gedankenspiele, sondern für die handfesten, modernen Grundlagen der Naturwissenschaften begeistern:
+Wussten Sie, dass Plinius der Jüngere den Ausbruch des Vesuvs auf die *'hora septima'* (ungefähr die 7. Stunde) terminierte? Mit dieser App berechnen wir die *temporalen* Stunden jenes Schicksalstages nach.
 
-Besuchen Sie gerne meine interaktive Lern-Baustelle unter **[physik.hier-im-netz.de](https://physik.hier-im-netz.de)**. Dort finden Sie spannende Flashcards, Rätsel und alle Infos zur kommenden 2. Auflage meines Buches *"Brückenkurs Physik"* (Springer Nature).
+Hat Ihnen diese kleine spielerische Reise in die Geschichte gefallen? Wer sich für die handfesten, modernen Grundlagen der Naturwissenschaften begeistert:
+
+Besuchen Sie meine interaktive Lern-Baustelle unter **[physik.hier-im-netz.de](https://physik.hier-im-netz.de)**. Dort finden Sie spannende Flashcards, Rätsel und alle Infos zur kommenden 2. Auflage meines Buches *"Brückenkurs Physik"* (Springer Nature).
 """)
 
 
 # --- HAUPTPROGRAMM ---
 # Titel nach dem Bild (falls Bild vorhanden)
+# TÄTIGUNG C: Titel angepasst, Hora Septima hinzugefügt
 if os.path.exists(bild_pfad):
-     st.subheader("Ihre temporale Uhr")
+     st.subheader("🌋 Zeitreise-App nach Pompeji: Hora Septima")
 
 lat, lon = hole_koordinaten(ort_name)
 uhr_platzhalter = st.empty()
@@ -141,17 +146,18 @@ else:
             st.warning("🌙 **Es ist aktuell Nacht!** Die temporalen Stunden ruhen, es gelten die Vigiliae (Nachtwachen).")
     
     # --- ERKLÄRTEXT IM AUFKLAPPMENÜ ---
+    # TÄTIGUNG A: Neuer Erklärtext mit Vesuv-Fun-Fact
     st.write("---")
-    with st.expander("ℹ️ Wie funktioniert die römische Zeit?"):
+    with st.expander("ℹ️ Wie funktioniert die römische Zeit? (Und der Vesuv-Knall)"):
         st.write("""
         Die Römer nutzten sogenannte **[temporale Stunden](https://de.wikipedia.org/wiki/Temporale_Stunden)**. Der Tag zwischen Sonnenaufgang und Sonnenuntergang wurde stets in exakt **12 gleich lange Stunden** unterteilt.
         
         Das führt zu einer faszinierenden Mechanik:
         * ☀️ Im **Sommer**, wenn die Tage lang sind, dauert eine römische Stunde (und damit auch jede Minute und Sekunde) länger als unsere heutige.
         * ❄️ Im **Winter**, bei kurzen Tagen, vergeht die römische Zeit spürbar schneller.
-        * 🕛 Nur am **wahren Mittag** (wenn die Sonne exakt am höchsten steht), sind beide Systeme perfekt synchron auf 12:00:00 Uhr.
         
-        Die Nacht wurde nicht in Stunden, sondern in vier Nachtwachen (*Vigiliae*) eingeteilt. Unsere Null (0) kannten die Römer noch nicht, weshalb hier ein **N** für *nulla/nihil* (nichts) angezeigt wird.
+        **Der Pompeji-Fun-Fact 🌋:**
+        Plinius der Jüngere terminierte den Ausbruch des Vesuvs im Jahr 79 n. Chr. auf die *'hora septima'* (ungefähr die 7. Stunde). Da die 6. Stunde exakt am wahren Mittag endete, befand sich Plinius am Beginn des Ausbruchs nach moderner Zeitrechnung zwischen 12:00 Uhr und 13:00 Uhr. Diese temporale Uhr zeigt Ihnen, wie spät es *jetzt gerade* nach diesem historischen System wäre.
         
         📖 *[Mehr dazu auf Wikipedia lesen](https://de.wikipedia.org/wiki/Temporale_Stunden)*
         """)
@@ -160,13 +166,4 @@ else:
     with st.expander("⚖️ Impressum & Datenschutz"):
         st.markdown("""
         **Impressum (Anbieterkennzeichnung)** *Max Mustermann* *Musterstraße 1* *12345 Musterstadt* *E-Mail: max@mustermail.de* **Datenschutz** Diese App speichert aktiv keine persönlichen Daten der Nutzer (keine Cookies, keine Datenbank). Bitte beachten Sie jedoch:  
-        * **Hosting:** Diese App wird über die Streamlit Community Cloud bereitgestellt. Beim Aufruf werden serverseitig Verbindungsdaten (wie Ihre IP-Adresse) durch Streamlit verarbeitet.  
-        * **Geodaten:** Die von Ihnen eingegebenen Ortsnamen werden zur Berechnung der Koordinaten an die Server von OpenStreetMap (Nominatim) gesendet.  
-
-        **Haftungsausschluss** Dies ist ein rein privates Hobbyprojekt. Es wird keine Gewähr für die Richtigkeit, Aktualität oder ständige Verfügbarkeit der berechneten Zeiten und Geodaten übernommen.
-        """)
-
-    # Live-Aktualisierung
-    if live_update:
-        time.sleep(1)
-        st.rerun()
+        * **Hosting:** Diese App wird über die Streamlit Community Cloud bereitgestellt
