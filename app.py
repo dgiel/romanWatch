@@ -70,11 +70,11 @@ st.sidebar.markdown("---") # Trennlinie
 st.sidebar.info("""
 **Vesuv-Ausbruch zur 7. Stunde? 🌋⏱️**
 
-Wussten Sie, dass Plinius der Jüngere den Ausbruch des Vesuvs auf die *'hora septima'* (ungefähr die 7. Stunde) terminierte? Mit dieser App berechnen wir die *temporalen* Stunden jenes Schicksalstages nach.
+Wussten Sie, dass Plinius der Jüngere den Ausbruch des Vesuvs auf die *'hora septima'* (die 7. Stunde) terminierte? Wann das war, hing nach römischer Zeitrechnung vom Sonnenaufgang, also dem Datum und dem Standort ab. Diese App berechnet je nach Standort die *temporale* Stunde.
 
 Hat Ihnen diese kleine spielerische Reise in die Geschichte gefallen? Wer sich für die handfesten, modernen Grundlagen der Naturwissenschaften begeistert:
 
-Besuchen Sie meine interaktive Lern-Baustelle unter **[physik.hier-im-netz.de](https://physik.hier-im-netz.de)**. Dort finden Sie spannende Flashcards, Rätsel und alle Infos zur kommenden 2. Auflage meines Buches *"Brückenkurs Physik"* (Springer Nature).
+Besuchen Sie **[physik.hier-im-netz.de](https://physik.hier-im-netz.de)**. Dort finden Sie spannende Flashcards, Rätsel und alle Infos zur kommenden 2. Auflage meines Buches *"Brückenkurs Physik"* (Springer Nature).
 """)
 
 
@@ -82,7 +82,7 @@ Besuchen Sie meine interaktive Lern-Baustelle unter **[physik.hier-im-netz.de](h
 # Titel nach dem Bild (falls Bild vorhanden)
 # TÄTIGUNG C: Titel angepasst, Hora Septima hinzugefügt
 if os.path.exists(bild_pfad):
-     st.subheader("🌋 Zeitreise-App nach Pompeji: Hora Septima")
+     st.subheader("🌋 Zeitreise-App nach Pompeji")
 
 lat, lon = hole_koordinaten(ort_name)
 uhr_platzhalter = st.empty()
