@@ -166,4 +166,13 @@ else:
     with st.expander("⚖️ Impressum & Datenschutz"):
         st.markdown("""
         **Impressum (Anbieterkennzeichnung)** *Max Mustermann* *Musterstraße 1* *12345 Musterstadt* *E-Mail: max@mustermail.de* **Datenschutz** Diese App speichert aktiv keine persönlichen Daten der Nutzer (keine Cookies, keine Datenbank). Bitte beachten Sie jedoch:  
-        * **Hosting:** Diese App wird über die Streamlit Community Cloud bereitgestellt
+        * **Hosting:** Diese App wird über die Streamlit Community Cloud bereitgestellt. Beim Aufruf werden serverseitig Verbindungsdaten (wie Ihre IP-Adresse) durch Streamlit verarbeitet.  
+        * **Geodaten:** Die von Ihnen eingegebenen Ortsnamen werden zur Berechnung der Koordinaten an die Server von OpenStreetMap (Nominatim) gesendet.  
+
+        **Haftungsausschluss** Dies ist ein rein privates Hobbyprojekt. Es wird keine Gewähr für die Richtigkeit, Aktualität oder ständige Verfügbarkeit der berechneten Zeiten und Geodaten übernommen.
+        """)
+
+    # Live-Aktualisierung
+    if live_update:
+        time.sleep(1)
+        st.rerun()
