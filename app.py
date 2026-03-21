@@ -9,10 +9,10 @@ from timezonefinder import TimezoneFinder
 import os
 
 # --- SEITENKONFIGURATION & LAYOUT (Responsiv) ---
-st.set_page_config(page_title="Zeitreise nach Pompeji: Hora Septima", page_icon="🌋", layout="centered")
+st.set_page_config(page_title="Zeitreise-App", page_icon="🌋", layout="centered")
 
 # --- HEADER-GRAFIK EINBINDEN ---
-bild_pfad = "vesuvius.png" 
+bild_pfad = "graphic.png" 
 
 if os.path.exists(bild_pfad):
     st.image(bild_pfad, use_container_width=True)
