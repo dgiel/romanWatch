@@ -58,8 +58,8 @@ if os.path.exists(bild_pfad):
      st.subheader("🌋 Zeitreise-App nach Pompeji: Hora Septima")
 
 # --- NEU: STEUERUNG ALS EXPANDER (statt Seitenleiste) ---
-with st.expander("⚙️ Zeitreise-Steuerung (Standort ändern)", expanded=True):
-    ort_name = st.text_input("📍 Historischer Standort (z.B. Neapel, Pompeji):", "Neapel")
+with st.expander("⚙️ Umrechnungs-Standort anpassen", expanded=True):
+    ort_name = st.text_input("📍 Standort (z.B. Neapel, Pompeji):", "Neapel")
     live_update = st.checkbox("Live-Uhr (Sekundentakt)", value=True, help="Ausschalten, um in Ruhe einen anderen Ort einzutippen")
 
 # --- HAUPTPROGRAMM (UHR-ANZEIGE) ---
@@ -123,7 +123,7 @@ else:
     st.write("---")
     
     # 1. Erklärung
-    with st.expander("ℹ️ Wie funktioniert die römische Zeit? (Und der Vesuv-Knall)"):
+    with st.expander("ℹ️ Wie funktioniert die römische Zeit?"):
         st.write("""
         Die Römer nutzten sogenannte **[temporale Stunden](https://de.wikipedia.org/wiki/Temporale_Stunden)**. Der Tag zwischen Sonnenaufgang und Sonnenuntergang wurde stets in exakt **12 gleich lange Stunden** unterteilt.
         
@@ -140,7 +140,7 @@ else:
         st.info("""
         **Zeitmessung heute: Die Cäsium-Sekunde ⏱️**
 
-        Hat Ihnen diese kleine spielerische Reise in die Geschichte gefallen? Wer sich für die handfesten, modernen Grundlagen der Naturwissenschaften begeistert:
+        Hat Ihnen diese Reise in die Geschichte gefallen? Wer sich für die modernen Grundlagen der Naturwissenschaften begeistert:
 
         Besuchen Sie meine interaktive Lern-Baustelle unter **[physik.hier-im-netz.de](https://physik.hier-im-netz.de)**. Dort finden Sie spannende Flashcards, Rätsel und alle Infos zur kommenden 2. Auflage meines Buches *"Brückenkurs Physik"* (Springer Nature).
         """)
@@ -148,7 +148,7 @@ else:
     # 3. Impressum
     with st.expander("⚖️ Impressum & Datenschutz"):
         st.markdown("""
-        **Impressum (Anbieterkennzeichnung)** *Max Mustermann* *Musterstraße 1* *12345 Musterstadt* *E-Mail: max@mustermail.de* **Datenschutz** Diese App speichert aktiv keine persönlichen Daten der Nutzer (keine Cookies, keine Datenbank). Bitte beachten Sie jedoch:  
+        **Impressum (Anbieterkennzeichnung)** *Dominik Giel* *Badstr. 24* *Offenburg* *E-Mail: dominik.giel@hs-offenburg.de* **Datenschutz** Diese App speichert aktiv keine persönlichen Daten der Nutzer (keine Cookies, keine Datenbank). Bitte beachten Sie jedoch:  
         * **Hosting:** Diese App wird über die Streamlit Community Cloud bereitgestellt. Beim Aufruf werden serverseitig Verbindungsdaten (wie Ihre IP-Adresse) durch Streamlit verarbeitet.  
         * **Geodaten:** Die von Ihnen eingegebenen Ortsnamen werden zur Berechnung der Koordinaten an die Server von OpenStreetMap (Nominatim) gesendet.  
 
