@@ -55,7 +55,7 @@ def hole_zeitzone(lat, lon):
 
 # --- ÜBERSCHRIFT ---
 if os.path.exists(bild_pfad):
-     st.subheader("🌋 Zeitreise-App nach Pompeji: Hora Septima")
+     st.subheader("🌋 Zeitreise nach Pompeji")
 
 # --- NEU: STEUERUNG ALS EXPANDER (statt Seitenleiste) ---
 with st.expander("⚙️ Umrechnungs-Standort anpassen", expanded=True):
