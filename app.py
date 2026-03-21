@@ -125,4 +125,37 @@ else:
     # 1. Erklärung
     with st.expander("ℹ️ Wie funktioniert die römische Zeit? (Und der Vesuv-Knall)"):
         st.write("""
-        Die Römer nutzten
+        Die Römer nutzten sogenannte **[temporale Stunden](https://de.wikipedia.org/wiki/Temporale_Stunden)**. Der Tag zwischen Sonnenaufgang und Sonnenuntergang wurde stets in exakt **12 gleich lange Stunden** unterteilt.
+        
+        Das führt zu einer faszinierenden Mechanik:
+        * ☀️ Im **Sommer**, wenn die Tage lang sind, dauert eine römische Stunde (und damit auch jede Minute und Sekunde) länger als unsere heutige.
+        * ❄️ Im **Winter**, bei kurzen Tagen, vergeht die römische Zeit spürbar schneller.
+        
+        **Der Pompeji-Fun-Fact 🌋:**
+        Plinius der Jüngere terminierte den Ausbruch des Vesuvs im Jahr 79 n. Chr. auf die *'hora septima'* (ungefähr die 7. Stunde). Da die 6. Stunde exakt am wahren Mittag endete, befand sich Plinius am Beginn des Ausbruchs nach moderner Zeitrechnung zwischen 12:00 Uhr und 13:00 Uhr. Diese temporale Uhr zeigt Ihnen, wie spät es *jetzt gerade* nach diesem historischen System wäre.
+        """)
+
+    # 2. Buch-Hinweis (Neu als Expander)
+    with st.expander("📚 Von der Sonnenuhr zur modernen Physik"):
+        st.info("""
+        **Zeitmessung heute: Die Cäsium-Sekunde ⏱️**
+
+        Hat Ihnen diese kleine spielerische Reise in die Geschichte gefallen? Wer sich für die handfesten, modernen Grundlagen der Naturwissenschaften begeistert:
+
+        Besuchen Sie meine interaktive Lern-Baustelle unter **[physik.hier-im-netz.de](https://physik.hier-im-netz.de)**. Dort finden Sie spannende Flashcards, Rätsel und alle Infos zur kommenden 2. Auflage meines Buches *"Brückenkurs Physik"* (Springer Nature).
+        """)
+
+    # 3. Impressum
+    with st.expander("⚖️ Impressum & Datenschutz"):
+        st.markdown("""
+        **Impressum (Anbieterkennzeichnung)** *Max Mustermann* *Musterstraße 1* *12345 Musterstadt* *E-Mail: max@mustermail.de* **Datenschutz** Diese App speichert aktiv keine persönlichen Daten der Nutzer (keine Cookies, keine Datenbank). Bitte beachten Sie jedoch:  
+        * **Hosting:** Diese App wird über die Streamlit Community Cloud bereitgestellt. Beim Aufruf werden serverseitig Verbindungsdaten (wie Ihre IP-Adresse) durch Streamlit verarbeitet.  
+        * **Geodaten:** Die von Ihnen eingegebenen Ortsnamen werden zur Berechnung der Koordinaten an die Server von OpenStreetMap (Nominatim) gesendet.  
+
+        **Haftungsausschluss** Dies ist ein rein privates Hobbyprojekt. Es wird keine Gewähr für die Richtigkeit, Aktualität oder ständige Verfügbarkeit der berechneten Zeiten und Geodaten übernommen.
+        """)
+
+    # Live-Aktualisierung
+    if live_update:
+        time.sleep(1)
+        st.rerun()
