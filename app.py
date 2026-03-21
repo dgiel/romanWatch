@@ -95,8 +95,7 @@ else:
             abstand_zum_mittag_sek = (jetzt_utc - wahrer_mittag).total_seconds()
             skalierungsfaktor = 43200 / tageslaenge_sek
             roemische_sekunden = abstand_zum_mittag_sek * skalierungsfaktor
-            
-            roemischer_mittag = datetime.datetime(2000, 1, 1, 12, 0, 0)
+            roemischer_mittag = datetime.datetime(2000, 1, 1, 6, 0, 0)
             roemische_zeit = roemischer_mittag + datetime.timedelta(seconds=roemische_sekunden)
             
             anzeige_arabisch = roemische_zeit.strftime("%H:%M:%S")
