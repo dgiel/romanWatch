@@ -1,160 +1,218 @@
 import streamlit as st
 import datetime
-import time
+from astral import LocationInfo
+from astral.sun import sun
 import pytz
 from geopy.geocoders import Nominatim
-from astral.sun import sun
-from astral import LocationInfo
-from timezonefinder import TimezoneFinder
-import os
+import re
 
-# --- SEITENKONFIGURATION & LAYOUT (Responsiv) ---
-st.set_page_config(page_title="Zeitreise-App", page_icon="🌋", layout="centered")
+# ==========================================
+# 1. KONFIGURATION & STYLING
+# ==========================================
+st.set_page_name("RomanWatch - Römische Uhr")
+st.set_page_icon("⏱️")
 
-# --- HEADER-GRAFIK EINBINDEN ---
-bild_pfad = "graphic.png" 
-
-if os.path.exists(bild_pfad):
-    st.image(bild_pfad, use_container_width=True)
-else:
-    st.title("🏛️ Zeitreise-App")
-    st.warning(f"Hinweis: Die Header-Grafik '{bild_pfad}' wurde nicht im Verzeichnis gefunden.")
-
-# --- HILFSFUNKTION ---
-def int_zu_roemisch(zahl):
-    if zahl == 0:
-        return "N" # N für "nulla"
+# Custom CSS für Layout-Anpassungen (Römische Zeit nach oben)
+st.markdown("""
+<style>
+    /* Versteckt das Streamlit-Menü für einen cleaner Look */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
     
-    werte = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1]
-    symbole = ["M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"]
-    roemisch = ""
+    /* Styling für die arabische Uhrzeit oben */
+    .time-top {
+        font-size: 3rem !important;
+        font-weight: 700;
+        color: #d4af37; /* Gold */
+        text-align: center;
+        margin-top: -1rem; /* Zieht es näher ans Bild */
+        margin-bottom: 0rem;
+    }
+    .time-top-label {
+        font-size: 1rem;
+        color: #a0a0a0;
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# ==========================================
+# 2. HILFSFUNKTIONEN
+# ==========================================
+
+# Römische Ziffern Konverter (für die Legende)
+def to_roman(n):
+    if not (0 < n < 4000):
+        return str(n)
+    val = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1]
+    syb = ["M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"]
+    roman_num = ''
     i = 0
-    while zahl > 0:
-        for _ in range(zahl // werte[i]):
-            roemisch += symbole[i]
-            zahl -= werte[i]
+    while n > 0:
+        for _ in range(n // val[i]):
+            roman_num += syb[i]
+            n -= val[i]
         i += 1
-    return roemisch
+    return roman_num
 
-# --- CACHING FÜR API-ABFRAGEN ---
-@st.cache_data
-def hole_koordinaten(stadt):
-    geolocator = Nominatim(user_agent="meine_roemische_uhr_app")
+# Geocoding: Ort -> Koordinaten
+def get_coords(location_name):
+    geolocator = Nominatim(user_agent="roman_watch_app")
     try:
-        location = geolocator.geocode(stadt)
+        location = geolocator.geocode(location_name)
         if location:
-            return location.latitude, location.longitude
-    except Exception as e:
-        st.error(f"Fehler bei der Geolokalisierung: {e}")
-    return None, None
-
-@st.cache_data
-def hole_zeitzone(lat, lon):
-    tf = TimezoneFinder()
-    return tf.timezone_at(lng=lon, lat=lat)
-
-# --- ÜBERSCHRIFT ---
-if os.path.exists(bild_pfad):
-     st.subheader("🌋 Zeitreise nach Pompeji")
-
-# --- NEU: STEUERUNG ALS EXPANDER (statt Seitenleiste) ---
-with st.expander("⚙️ Umrechnungs-Standort anpassen", expanded=True):
-    ort_name = st.text_input("📍 Standort (z.B. Neapel, Pompeji):", "Neapel")
-    live_update = st.checkbox("Live-Uhr (Sekundentakt)", value=True, help="Ausschalten, um in Ruhe einen anderen Ort einzutippen")
-
-# --- HAUPTPROGRAMM (UHR-ANZEIGE) ---
-lat, lon = hole_koordinaten(ort_name)
-uhr_platzhalter = st.empty()
-
-if lat is None or lon is None:
-    st.error("Ort nicht gefunden. Bitte überprüfe die Schreibweise.")
-else:
-    tz_name = hole_zeitzone(lat, lon)
-    lokale_zeitzone = pytz.timezone(tz_name) if tz_name else pytz.UTC
-    
-    jetzt_utc = datetime.datetime.now(datetime.timezone.utc)
-    jetzt_lokal = jetzt_utc.astimezone(lokale_zeitzone)
-    
-    ort_info = LocationInfo(ort_name, tz_name if tz_name else "UTC", tz_name if tz_name else "UTC", lat, lon)
-    sonnen_daten = sun(ort_info.observer, date=jetzt_utc.date())
-    
-    t_auf = sonnen_daten["sunrise"]
-    t_unter = sonnen_daten["sunset"]
-    
-    tageslaenge_sek = (t_unter - t_auf).total_seconds()
-    wahrer_mittag = t_auf + datetime.timedelta(seconds=tageslaenge_sek / 2)
-    
-    with uhr_platzhalter.container():
-        st.write("---")
-        st.caption(f"📍 **{ort_name.capitalize()}** | 🌍 Zeitzone: {tz_name}")
-        
-        st.metric(label="1️⃣ Moderne Ortszeit", value=jetzt_lokal.strftime('%H:%M:%S'))
-        st.write("---")
-        
-        if t_auf <= jetzt_utc <= t_unter:
-            abstand_zum_mittag_sek = (jetzt_utc - wahrer_mittag).total_seconds()
-            skalierungsfaktor = 43200 / tageslaenge_sek
-            roemische_sekunden = abstand_zum_mittag_sek * skalierungsfaktor
-            roemischer_mittag = datetime.datetime(2000, 1, 1, 6, 0, 0)
-            roemische_zeit = roemischer_mittag + datetime.timedelta(seconds=roemische_sekunden)
-            
-            anzeige_arabisch = roemische_zeit.strftime("%H:%M:%S")
-            
-            try:
-                h = int_zu_roemisch(roemische_zeit.hour)
-                m = int_zu_roemisch(roemische_zeit.minute)
-                s = int_zu_roemisch(roemische_zeit.second)
-                anzeige_roemisch = f"{h} : {m} : {s}"
-            except Exception:
-                 anzeige_roemisch = "Berechnungsfehler"
-
-            st.metric(label="2️⃣ Römische Zeit (Arabische Ziffern)", value=anzeige_arabisch)
-            st.metric(label="3️⃣ Römische Zeit (Römische Ziffern)", value=anzeige_roemisch)
-            
-            st.success("☀️ Die Sonne ist am Himmel! Die temporalen Tagesstunden laufen.")
-            
+            return location.latitude, location.longitude, location.raw.get('display_name')
         else:
-            st.metric(label="2️⃣ Römische Zeit", value="Nox (Nacht)")
-            st.metric(label="3️⃣ Römische Zeit", value="Nox (Nacht)")
-            st.warning("🌙 **Es ist aktuell Nacht!** Die temporalen Stunden ruhen, es gelten die Vigiliae (Nachtwachen).")
+            return None, None, None
+    except Exception as e:
+        return None, None, f"Fehler: {e}"
+
+# Römische Wachen (Vigiliae) Logik
+def get_vigilia_info(stunde_der_nacht):
+    """Gibt den Namen und die Stundenspanne einer Vigilia zurück."""
+    vigiliae = [
+        {"name": "I. VIGILIA (Prima Vigilia)", "span": "1.-3. Nachstunde", "icon": "🌙"},
+        {"name": "II. VIGILIA (Secunda Vigilia)", "span": "4.-6. Nachstunde", "icon": "🌌"},
+        {"name": "III. VIGILIA (Tertia Vigilia)", "span": "7.-9. Nachstunde", "icon": "🌑"},
+        {"name": "IV. VIGILIA (Quarta Vigilia)", "span": "10.-12. Nachstunde", "icon": "🌅"},
+    ]
     
-    # --- INFOBEREICH (KOMPLETT ALS EXPANDER) ---
-    st.write("---")
+    # Stunde_der_nacht ist 1-12, Vigiliae sind 0-3
+    idx = int((stunde_der_nacht - 1) // 3)
     
-    # 1. Erklärung
-    with st.expander("ℹ️ Wie funktioniert die römische Zeit?"):
-        st.write("""
-        Die Römer nutzten sogenannte **[temporale Stunden](https://de.wikipedia.org/wiki/Temporale_Stunden)**. Der Tag zwischen Sonnenaufgang und Sonnenuntergang wurde stets in exakt **12 gleich lange Stunden** unterteilt.
+    # Sicherheitscheck für Rundungsfehler am Morgen
+    if idx < 0: idx = 0
+    if idx > 3: idx = 3
         
-        Das führt zu einer faszinierenden Mechanik:
-        * ☀️ Im **Sommer**, wenn die Tage lang sind, dauert eine römische Stunde (und damit auch jede Minute und Sekunde) länger als unsere heutige.
-        * ❄️ Im **Winter**, bei kurzen Tagen, vergeht die römische Zeit spürbar schneller.
+    return vigiliae[idx]
+
+# ==========================================
+# 3. HAUPTPROGRAMM / UI
+# ==========================================
+
+st.title("RomanWatch: Römische Temporale Uhr")
+st.markdown("*Wie spät wäre es jetzt in Pompeji?*")
+
+# 3.1. SITEDAR / EINSTELLUNGEN
+with st.sidebar:
+    st.header("Einstellungen")
+    
+    location_input = st.text_input("Ort suchen (z.B. Rome, Pompeii, Berlin)", "Pompeii, Italy")
+    lat, lon, full_address = get_coords(location_input)
+    
+    if lat and lon:
+        st.success(f"Ort gefunden: {lat:.4f}°N, {lon:.4f}°E")
+        st.info(f"Genaue Adresse: {full_address}")
+    else:
+        st.error("Ort nicht gefunden oder Geocoding-Fehler.")
+        st.stop() # App stoppen, wenn kein Ort da ist
+
+    date_input = st.date_input("Datum", datetime.date.today())
+    
+    # Zeitzone basierend auf Koordinaten finden (sehr rudimentär)
+    timezone_str = 'Europe/Rome' if lon < 15 else 'Europe/Berlin' # Vereinfacht
+    local_tz = pytz.timezone(timezone_str)
+    
+    # Berechnung des Sonnenstands für das gewählte Datum (00:00 Uhr lokal)
+    naive_date = datetime.datetime.combine(date_input, datetime.time(0, 0))
+    aware_date = local_tz.localize(naive_date)
+
+    try:
+        loc = LocationInfo("Custom", "World", timezone_str, lat, lon)
+        s = sun(loc.observer, date=aware_date.date(), tzinfo=aware_date.tzinfo)
+        sunrise = s['sunrise']
+        sunset = s['sunset']
+    except Exception as e:
+        st.error(f"Fehler bei Sonnenstandsberechnung: {e}")
+        st.stop()
+
+# 3.2. BERECHNUNG DER ZEIT
+now_utc = datetime.datetime.now(pytz.utc)
+now_local = now_utc.astimezone(local_tz)
+
+is_day = sunrise < now_local < sunset
+
+if is_day:
+    day_duration = sunset - sunrise
+    hour_duration = day_duration / 12
+    elapsed_time = now_local - sunrise
+    roman_decimal_hour = elapsed_time / hour_duration
+    base_text = "Tagstunde (hora diurna)"
+else:
+    # Nacht berechnen:
+    if now_local >= sunset: # Nach Sonnenuntergang, vor Mitternacht
+        night_duration = (sunrise + datetime.timedelta(days=1)) - sunset
+        elapsed_time = now_local - sunset
+    else: # Nach Mitternacht, vor Sonnenaufgang
+        night_duration = sunrise - (sunset - datetime.timedelta(days=1))
+        prev_sunset = sunset - datetime.timedelta(days=1)
+        elapsed_time = now_local - prev_sunset
         
-        **Der Pompeji-Fun-Fact 🌋:**
-        Plinius der Jüngere terminierte den Ausbruch des Vesuvs im Jahr 79 n. Chr. auf die *'hora septima'* (ungefähr die 7. Stunde). Da die 6. Stunde exakt am wahren Mittag endete, befand sich Plinius am Beginn des Ausbruchs nach moderner Zeitrechnung zwischen 12:00 Uhr und 13:00 Uhr. Diese temporale Uhr zeigt Ihnen, wie spät es *jetzt gerade* nach diesem historischen System wäre.
-        """)
+    hour_duration = night_duration / 12
+    roman_decimal_hour = elapsed_time / hour_duration
+    base_text = "Nachtstunde (hora nocturna)"
 
-    # 2. Buch-Hinweis (Neu als Expander)
-    with st.expander("📚 Von der Sonnenuhr zur modernen Physik"):
-        st.info("""
-        **Zeitmessung heute: Die Cäsium-Sekunde ⏱️**
+# Formatieren der arabischen Uhrzeit
+whole_hours = int(roman_decimal_hour)
+decimal_minutes = (roman_decimal_hour - whole_hours) * 60
+whole_minutes = int(decimal_minutes)
+decimal_seconds = (decimal_minutes - whole_minutes) * 60
+whole_seconds = int(decimal_seconds)
 
-        Hat Ihnen diese Reise in die Geschichte gefallen? Wer sich für die modernen Grundlagen der Naturwissenschaften begeistert:
+roman_time_str = f"{whole_hours:02d}:{whole_minutes:02d}:{whole_seconds:02d}"
 
-        Besuchen Sie meine interaktive Lern-Baustelle unter **[physik.hier-im-netz.de](https://physik.hier-im-netz.de)**. Dort finden Sie spannende Flashcards, Rätsel und alle Infos zur kommenden 2. Auflage meines Buches *"Brückenkurs Physik"* (Springer Nature).
-        """)
+# 3.3. UI ANZEIGE (MIT BILD NACH OBEN)
+# Bildschöne antike Sonnenuhr/Wasseruhr
+st.image("https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Roman_pocket_sundials_IJK.jpg/1280px-Roman_pocket_sundials_IJK.jpg", caption="Antike Römische Taschensonnenuhren (I-III Jhd.)")
 
-    # 3. Impressum
-    with st.expander("⚖️ Impressum & Datenschutz"):
-        st.markdown("""
-        **Impressum (Anbieterkennzeichnung)** *Dominik Giel* *Badstr. 24* *Offenburg* *E-Mail: dominik.giel@hs-offenburg.de* **Datenschutz** Diese App speichert aktiv keine persönlichen Daten der Nutzer (keine Cookies, keine Datenbank). Bitte beachten Sie jedoch:  
-        * **Hosting:** Diese App wird über die Streamlit Community Cloud bereitgestellt. Beim Aufruf werden serverseitig Verbindungsdaten (wie Ihre IP-Adresse) durch Streamlit verarbeitet.  
-        * **Geodaten:** Die von Ihnen eingegebenen Ortsnamen werden zur Berechnung der Koordinaten an die Server von OpenStreetMap (Nominatim) gesendet.  
+# DIE NEUE ANZEIGE: Römische Zeit oben (arabisch)
+st.markdown(f'<p class="time-top">{roman_time_str}</p>', unsafe_allow_html=True)
+st.markdown(f'<p class="time-top-label">Römische Temporale Zeit ({date_input.strftime("%d.%m.%Y")} • {now_local.strftime("%H:%M:%S")})</p>', unsafe_allow_html=True)
 
-        **Haftungsausschluss** Dies ist ein rein privates Hobbyprojekt. Es wird keine Gewähr für die Richtigkeit, Aktualität oder ständige Verfügbarkeit der berechneten Zeiten und Geodaten übernommen.
-        """)
+st.divider()
 
-    # Live-Aktualisierung
-    if live_update:
-        time.sleep(1)
-        st.rerun()
+# DETAILS UND NACHTWACHEN (UNTEN)
+if is_day:
+    # Anzeige am Tag: Die Sonnenuhr ist aktiv
+    st.subheader(f"Es ist Tag in {location_input}")
+    st.metric(label=f"Aktuelle {base_text}", value=f"{whole_hours + 1}. Stunde", help="Die Römer zählten die Stunden ab Sonnenaufgang (0-11, also 1.-12. Stunde).")
+    
+    st.progress(roman_decimal_hour / 11.0 if roman_decimal_hour <= 11 else 1.0)
+    st.caption(f"Fortschritt des lichten Tages (Länge: {day_duration})")
+
+else:
+    # Anzeige in der Nacht: Die Nachtwachen sind aktiv
+    st.subheader(f"Es ist Nacht in {location_input}")
+    
+    stunde_der_nacht = whole_hours + 1
+    vigilia_info = get_vigilia_info(stunde_der_nacht)
+    
+    st.metric(label="Aktuelle Wache (Vigilia)", value=f"{vigilia_info['name']}", help=f"Die Römer teilten die Nacht in 4 Wachen zu je 3 Nachstunden.")
+    st.metric(label="Nachstunde (hora nocturna)", value=f"{stunde_der_nacht}. Stunde", help=f"Entspricht der {vigilia_info['span']}.")
+    
+    st.progress(roman_decimal_hour / 11.0 if roman_decimal_hour <= 11 else 1.0)
+    st.caption(f"Fortschritt der Nacht (Länge: {night_duration})")
+    
+    st.warning(f"{vigilia_info['icon']} {vigilia_info['name']}: Wache für die Legionen am Limes.")
+
+# 3.4. LEGENDE & PHYSIK
+st.divider()
+with st.expander("Wie funktioniert diese Uhr? (Die Physik dahinter)"):
+    st.markdown("""
+    ### Temporale Stunden vs. Äquinoktialstunden
+
+    Unsere modernen Stunden sind "Äquinoktialstunden" – sie sind immer exakt 60 Minuten (3600 Sekunden) lang, egal wo man sich auf der Erde befindet oder welche Jahreszeit wir haben. Sie basieren auf der Annahme einer gleichförmigen Erdrotation.
+
+    Die Römer hingegen nutzten "temporale Stunden" (*horae*). Sie definierten:
+    1.  Die Zeitspanne zwischen Sonnenaufgang und Sonnenuntergang ist **immer 12 Tagstunden** lang.
+    2.  Die Zeitspanne zwischen Sonnenuntergang und Sonnenaufgang ist **immer 12 Nachstunden** lang.
+
+    **Der physikalische Effekt:**
+    Da die Länge des lichten Tages im Jahreslauf stark schwankt (im Sommer lang, im Winter kurz), variiert auch die Länge einer römischen Stunde. Eine *hora diurna* im Hochsommer war in Rom fast 75 moderne Minuten lang, während sie im tiefsten Winter auf nur 45 Minuten schrumpfte.
+
+    ### Die Nachtwachen (Vigiliae)
+    Da eine Sonnenuhr nachts nutzlos war, orientierten sich die Römer (besonders das Militär) an den vier *Vigiliae* (Nachtwachen), die jeweils drei Nachstunden umfassten. Dies geschah meist mit Hilfe von Wasseruhren (*Clepsydra*), die für jeden Monat angepasst werden mussten, um die unterschiedlichen Stundenlängen korrekt darzustellen.
+
+    Diese App berechnet anhand der astronomischen Sonnenstandsdaten für Ihren gewählten Ort und Zeitpunkt die exakte Länge der temporalen Stunden und zeigt die Wachen an.
+    """)
