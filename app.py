@@ -60,4 +60,142 @@ def hole_zeitzone(lat, lon):
 
 # --- 1. HEADER-GRAFIK EINBINDEN ---
 bild_pfad = "graphic.png" 
-if os.path
+if os.path.exists(bild_pfad):
+    st.image(bild_pfad, use_container_width=True)
+    st.subheader("🌋 Zeitreise nach Pompeji")
+else:
+    st.title("🏛️ Zeitreise nach Pompeji")
+    st.warning(f"Hinweis: Die Header-Grafik '{bild_pfad}' wurde nicht im Verzeichnis gefunden.")
+
+# --- 2. LAYOUT-CONTAINER DEFINIEREN ---
+# So zwingen wir die Uhrzeit nach GANZ OBEN, noch bevor die Einstellungen kommen!
+uhrzeit_container = st.container()
+
+with st.expander("⚙️ Umrechnungs-Standort anpassen", expanded=True):
+    ort_name = st.text_input("📍 Standort (z.B. Neapel, Pompeji):", "Neapel")
+    live_update = st.checkbox("Live-Uhr (Sekundentakt)", value=True, help="Ausschalten, um in Ruhe einen anderen Ort einzutippen")
+
+# --- 3. HAUPTPROGRAMM (UHR-BERECHNUNG) ---
+lat, lon = hole_koordinaten(ort_name)
+tz_name = hole_zeitzone(lat, lon)
+lokale_zeitzone = pytz.timezone(tz_name) if tz_name else pytz.UTC
+
+jetzt_utc = datetime.datetime.now(datetime.timezone.utc)
+jetzt_lokal = jetzt_utc.astimezone(lokale_zeitzone)
+
+ort_info = LocationInfo(ort_name, tz_name if tz_name else "UTC", tz_name if tz_name else "UTC", lat, lon)
+
+# Sonnenstandsdaten berechnen
+sonnen_daten = sun(ort_info.observer, date=jetzt_utc.date())
+t_auf = sonnen_daten["sunrise"]
+t_unter = sonnen_daten["sunset"]
+
+# Tag oder Nacht ermitteln
+if t_auf <= jetzt_utc <= t_unter:
+    is_day = True
+    dauer = (t_unter - t_auf).total_seconds()
+    vergangen = (jetzt_utc - t_auf).total_seconds()
+    label_text = "Römische Tageszeit (hora diurna)"
+else:
+    is_day = False
+    label_text = "Römische Nachtzeit (hora nocturna)"
+    if jetzt_utc > t_unter:
+        morgen_daten = sun(ort_info.observer, date=(jetzt_utc + datetime.timedelta(days=1)).date())
+        t_auf_naechster = morgen_daten["sunrise"]
+        dauer = (t_auf_naechster - t_unter).total_seconds()
+        vergangen = (jetzt_utc - t_unter).total_seconds()
+    else:
+        gestern_daten = sun(ort_info.observer, date=(jetzt_utc - datetime.timedelta(days=1)).date())
+        t_unter_vorher = gestern_daten["sunset"]
+        dauer = (t_auf - t_unter_vorher).total_seconds()
+        vergangen = (jetzt_utc - t_unter_vorher).total_seconds()
+
+# Umrechnung in römische Stunden
+stunden_dauer = dauer / 12
+roemisch_dezimal = vergangen / stunden_dauer
+
+ganze_stunden = int(roemisch_dezimal)
+rest_minuten = (roemisch_dezimal - ganze_stunden) * 60
+ganze_minuten = int(rest_minuten)
+rest_sekunden = (rest_minuten - ganze_minuten) * 60
+ganze_sekunden = int(rest_sekunden)
+
+anzeige_arabisch = f"{ganze_stunden:02d}:{ganze_minuten:02d}:{ganze_sekunden:02d}"
+
+try:
+    h = int_zu_roemisch(ganze_stunden)
+    m = int_zu_roemisch(ganze_minuten)
+    s = int_zu_roemisch(ganze_sekunden)
+    anzeige_roemisch = f"{h} : {m} : {s}"
+except Exception:
+    anzeige_roemisch = "Berechnungsfehler"
+
+# --- 4. UI ANZEIGE (Befüllung der Container) ---
+
+# A) Römische Zeit im Container GANZ OBEN injizieren
+with uhrzeit_container:
+    # Sauberes Inline-CSS, das garantiert nicht von Streamlit verschluckt wird
+    st.markdown(f"<h1 style='text-align: center; color: #d4af37; font-size: 4.5rem; margin-bottom: 0px;'>{anzeige_arabisch}</h1>", unsafe_allow_html=True)
+    st.markdown(f"<p style='text-align: center; color: gray; font-size: 1.2rem; margin-top: -10px;'>{label_text}</p>", unsafe_allow_html=True)
+    st.write("---")
+
+# B) Restliche Metriken und Infos unterm Expander
+st.caption(f"📍 **{ort_name.capitalize()}** | 🌍 Zeitzone: {tz_name}")
+col1, col2 = st.columns(2)
+with col1:
+    st.metric(label="Moderne Ortszeit", value=jetzt_lokal.strftime('%H:%M:%S'))
+with col2:
+    st.metric(label="Römische Ziffern", value=anzeige_roemisch)
+
+st.write("---")
+
+# Status & Nachtwachen-Logik
+if is_day:
+    aktuelle_stunde = min(12, ganze_stunden + 1)
+    st.success("☀️ Die Sonne ist am Himmel! Die temporalen Tagesstunden laufen.")
+    st.info(f"Wir befinden uns in der **{aktuelle_stunde}. hora diurna** (Tagstunde).")
+else:
+    aktuelle_stunde_der_nacht = min(12, ganze_stunden + 1)
+    vigilia = get_vigilia_info(aktuelle_stunde_der_nacht)
+    
+    st.warning("🌙 **Es ist aktuell Nacht!** Die temporalen Stunden ruhen, es gelten die Vigiliae (Nachtwachen).")
+    st.metric(label="Aktuelle Wache", value=vigilia["name"])
+    st.info(f"{vigilia['icon']} Wir befinden uns in der **{aktuelle_stunde_der_nacht}. hora nocturna** (Entspricht der {vigilia['span']}).")
+
+# --- 5. INFOBEREICH ---
+st.write("---")
+
+with st.expander("ℹ️ Wie funktioniert die römische Zeit?"):
+    st.write("""
+    Die Römer nutzten sogenannte **[temporale Stunden](https://de.wikipedia.org/wiki/Temporale_Stunden)**. Der Tag zwischen Sonnenaufgang und Sonnenuntergang wurde stets in exakt **12 gleich lange Stunden** unterteilt.
+    
+    Das führt zu einer faszinierenden Mechanik:
+    * ☀️ Im **Sommer**, wenn die Tage lang sind, dauert eine römische Stunde (und damit auch jede Minute und Sekunde) länger als unsere heutige.
+    * ❄️ Im **Winter**, bei kurzen Tagen, vergeht die römische Zeit spürbar schneller.
+    
+    **Der Pompeji-Fun-Fact 🌋:**
+    Plinius der Jüngere terminierte den Ausbruch des Vesuvs im Jahr 79 n. Chr. auf die *'hora septima'* (ungefähr die 7. Stunde). Da die 6. Stunde exakt am wahren Mittag endete, befand sich Plinius am Beginn des Ausbruchs nach moderner Zeitrechnung zwischen 12:00 Uhr und 13:00 Uhr. Diese temporale Uhr zeigt Ihnen, wie spät es *jetzt gerade* nach diesem historischen System wäre.
+    """)
+
+with st.expander("📚 Von der Sonnenuhr zur modernen Physik"):
+    st.info("""
+    **Zeitmessung heute: Die Cäsium-Sekunde ⏱️**
+
+    Hat Ihnen diese Reise in die Geschichte gefallen? Wer sich für die modernen Grundlagen der Naturwissenschaften begeistert:
+
+    Besuchen Sie meine interaktive Lern-Baustelle unter **[physik.hier-im-netz.de](https://physik.hier-im-netz.de)**. Dort finden Sie spannende Flashcards, Rätsel und alle Infos zur kommenden 2. Auflage meines Buches *"Brückenkurs Physik"* (Springer Nature).
+    """)
+
+with st.expander("⚖️ Impressum & Datenschutz"):
+    st.markdown("""
+    **Impressum (Anbieterkennzeichnung)** *Dominik Giel* *Badstr. 24* *Offenburg* *E-Mail: dominik.giel@hs-offenburg.de* **Datenschutz** Diese App speichert aktiv keine persönlichen Daten der Nutzer (keine Cookies, keine Datenbank). Bitte beachten Sie jedoch:  
+    * **Hosting:** Diese App wird über die Streamlit Community Cloud bereitgestellt. Beim Aufruf werden serverseitig Verbindungsdaten (wie Ihre IP-Adresse) durch Streamlit verarbeitet.  
+    * **Geodaten:** Die von Ihnen eingegebenen Ortsnamen werden zur Berechnung der Koordinaten an die Server von OpenStreetMap (Nominatim) gesendet.  
+
+    **Haftungsausschluss** Dies ist ein rein privates Hobbyprojekt. Es wird keine Gewähr für die Richtigkeit, Aktualität oder ständige Verfügbarkeit der berechneten Zeiten und Geodaten übernommen.
+    """)
+
+# Live-Aktualisierung ganz am Schluss
+if live_update:
+    time.sleep(1)
+    st.rerun()
