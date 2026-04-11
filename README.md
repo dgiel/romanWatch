@@ -1,4 +1,5 @@
-*romanWatch* is an open-source code project that provides a unique visual representation of time, bridging the gap between classical mechanics, digital visualization, and historical numeral systems.
+**romanWatch** is an open-source code project that provides a unique visual representation of time, bridging the gap between classical mechanics, digital visualization, and historical numeral systems.
+
 🎯 Project Vision
 
 The project was developed with a focus on MINT (STEM) education. It aims to make physics and mechanical concepts tangible through innovative digital design. By visualizing time through a "physical lens," we encourage students and enthusiasts to think about the underlying structures of measurement and motion.
