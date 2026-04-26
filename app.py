@@ -115,15 +115,21 @@ stunden_dauer = dauer / 12
 roemisch_dezimal = vergangen / stunden_dauer
 
 ganze_stunden = int(roemisch_dezimal)
+
+# FIX: Für die Anzeige schieben wir die Stunde um 1 nach oben (1. bis 12. Stunde)
+anzeige_stunde = min(12, ganze_stunden + 1)
+
 rest_minuten = (roemisch_dezimal - ganze_stunden) * 60
 ganze_minuten = int(rest_minuten)
 rest_sekunden = (rest_minuten - ganze_minuten) * 60
 ganze_sekunden = int(rest_sekunden)
 
-anzeige_arabisch = f"{ganze_stunden:02d}:{ganze_minuten:02d}:{ganze_sekunden:02d}"
+# In der arabischen Digital-Anzeige nutzen wir jetzt "anzeige_stunde"
+anzeige_arabisch = f"{anzeige_stunde:02d}:{ganze_minuten:02d}:{ganze_sekunden:02d}"
 
 try:
-    h = int_zu_roemisch(ganze_stunden)
+    # Für die römischen Ziffern nutzen wir ebenfalls "anzeige_stunde"
+    h = int_zu_roemisch(anzeige_stunde)
     m = int_zu_roemisch(ganze_minuten)
     s = int_zu_roemisch(ganze_sekunden)
     anzeige_roemisch = f"{h} : {m} : {s}"
@@ -160,42 +166,4 @@ else:
     
     st.warning("🌙 **Es ist aktuell Nacht!** Die temporalen Stunden ruhen, es gelten die Vigiliae (Nachtwachen).")
     st.metric(label="Aktuelle Wache", value=vigilia["name"])
-    st.info(f"{vigilia['icon']} Wir befinden uns in der **{aktuelle_stunde_der_nacht}. hora nocturna** (Entspricht der {vigilia['span']}).")
-
-# --- 5. INFOBEREICH ---
-st.write("---")
-
-with st.expander("ℹ️ Wie funktioniert die römische Zeit?"):
-    st.write("""
-    Die Römer nutzten sogenannte **[temporale Stunden](https://de.wikipedia.org/wiki/Temporale_Stunden)**. Der Tag zwischen Sonnenaufgang und Sonnenuntergang wurde stets in exakt **12 gleich lange Stunden** unterteilt.
-    
-    Das führt zu einer faszinierenden Mechanik:
-    * ☀️ Im **Sommer**, wenn die Tage lang sind, dauert eine römische Stunde (und damit auch jede Minute und Sekunde) länger als unsere heutige.
-    * ❄️ Im **Winter**, bei kurzen Tagen, vergeht die römische Zeit spürbar schneller.
-    
-    **Der Pompeji-Fun-Fact 🌋:**
-    Plinius der Jüngere terminierte den Ausbruch des Vesuvs im Jahr 79 n. Chr. auf die *'hora septima'* (ungefähr die 7. Stunde). Da die 6. Stunde exakt am wahren Mittag endete, befand sich Plinius am Beginn des Ausbruchs nach moderner Zeitrechnung zwischen 12:00 Uhr und 13:00 Uhr. Diese temporale Uhr zeigt Ihnen, wie spät es *jetzt gerade* nach diesem historischen System wäre.
-    """)
-
-with st.expander("📚 Von der Sonnenuhr zur modernen Physik"):
-    st.info("""
-    **Zeitmessung heute: Die Cäsium-Sekunde ⏱️**
-
-    Hat Ihnen diese Reise in die Geschichte gefallen? Wer sich für die modernen Grundlagen der Naturwissenschaften begeistert:
-
-    Besuchen Sie meine interaktive Lern-Baustelle unter **[physik.hier-im-netz.de](https://physik.hier-im-netz.de)**. Dort finden Sie spannende Flashcards, Rätsel und alle Infos zur kommenden 2. Auflage meines Buches *"Brückenkurs Physik"* (Springer Nature).
-    """)
-
-with st.expander("⚖️ Impressum & Datenschutz"):
-    st.markdown("""
-    **Impressum (Anbieterkennzeichnung)** *Dominik Giel* *Badstr. 24* *Offenburg* *E-Mail: dominik.giel@hs-offenburg.de* **Datenschutz** Diese App speichert aktiv keine persönlichen Daten der Nutzer (keine Cookies, keine Datenbank). Bitte beachten Sie jedoch:  
-    * **Hosting:** Diese App wird über die Streamlit Community Cloud bereitgestellt. Beim Aufruf werden serverseitig Verbindungsdaten (wie Ihre IP-Adresse) durch Streamlit verarbeitet.  
-    * **Geodaten:** Die von Ihnen eingegebenen Ortsnamen werden zur Berechnung der Koordinaten an die Server von OpenStreetMap (Nominatim) gesendet.  
-
-    **Haftungsausschluss** Dies ist ein rein privates Hobbyprojekt. Es wird keine Gewähr für die Richtigkeit, Aktualität oder ständige Verfügbarkeit der berechneten Zeiten und Geodaten übernommen.
-    """)
-
-# Live-Aktualisierung ganz am Schluss
-if live_update:
-    time.sleep(1)
-    st.rerun()
+    st.info(f"{vigilia['icon']} Wir befinden uns in der **{aktuelle_stunde_der_nacht}. hora nocturna** (Entspricht der {vigilia['
